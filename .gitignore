@@ -1,0 +1,8 @@
+# WordPress related
+wp-content/uploads/
+wp-content/cache/
+node_modules/
+vendor/
+.DS_Store
+.idea/
+*.log

@@ -1,0 +1,34 @@
+name: Build WordPress Plugin Release
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Ensure tag matches semver
+        run: |
+          if [[ ! "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag ${GITHUB_REF} does not match vMAJOR.MINOR.PATCH. Exiting."
+            exit 1
+          fi
+
+      - name: Create plugin folder, update version, and zip
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Packaging plugin with version $VERSION"
+          mkdir -p build
+          rsync -av --exclude='.git*' --exclude='build' --exclude='node_modules' --exclude='tests' ./ build/woo-category-ordering
+          cd build
+          zip -r woo-category-ordering-$VERSION.zip woo-category-ordering
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/woo-category-ordering-*.zip
